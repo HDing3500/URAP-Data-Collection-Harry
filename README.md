@@ -2,24 +2,18 @@
 A Python project for extracting and analyzing restructuring-related disclosures from SEC 10-K filings.
 This tool uses the EDGAR API to retrieve company filings, extract Item 7 (Management’s Discussion & Analysis) and Item 8 (Financial Statements), and filter for text specifically related to restructuring activities.
 
-##🚀 Project Goals
+## 🚀 Project Goals
 
-Automatically fetch 10-K filings from the SEC’s EDGAR database.
+1.Automatically fetch 10-K filings from the SEC’s EDGAR database.
 
-Parse and isolate Item 7 and Item 8 sections.
+2.Parse and isolate Item 7 and Item 8 sections.
 
-Identify sentences discussing restructuring, realignment, severance, and related activities.
+3.Identify sentences discussing restructuring, realignment, severance, and related activities.
 
-Output structured snippets for later testing against manually collected datasets.
+4.Output structured snippets for later testing against manually collected datasets.
 
-Serve as a foundation for an NLP model to evaluate disclosure accuracy and completeness.
+5.Serve as a foundation for an NLP model to evaluate disclosure accuracy and completeness.
 
-1. Obtain CIK with company name
-2. Choose 10-k with CIK and Fiscal Year
-3. fetch the html for the 10-k
-4. convert html to text
-5. extract item 7
-6. write it out on a .txt file
 
 
 
