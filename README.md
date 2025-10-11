@@ -1,4 +1,5 @@
-# URAP-Task-1-Web-Scraper
+# Automating Data Collection
+Automating Data Collection using Python and the SEC API. using Python to gather the information directly from 10-Ks via the SEC API. This method will first be tested against our manually collected data before we use it to process the remaining companies in our 20,000+ sample.
 Takes in User input \[company name, fiscal year] and then write out all the content from ITEM 7 of the 10-k form and put it into a .txt file which will be saved in the same location where the code file is run from.
 
 
