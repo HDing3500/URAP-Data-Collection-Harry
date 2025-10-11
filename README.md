@@ -14,15 +14,8 @@ This tool uses the EDGAR API to retrieve company filings, extract Item 7 (Manage
 
 5.Serve as a foundation for an NLP model to evaluate disclosure accuracy and completeness.
 
-
-
-
-IMPROVEMENT NEEDED NOT ALL TEST CASE WORK
-
-If further work is to be done we need to set version control and redesign code in a OOP manner
-
-
-
-Failed when there's more than one appearance of the subject title of item 7 
-
+models.py :	Defines FilingMeta, ItemSections, and Snippet dataclasses used throughout the pipeline.
+extractor.py	: Core logic for fetching filings, extracting Items 7 & 8, and filtering restructuring-related snippets.
+main.py :	Example script showing how to run the extractor for a specific company and year.
+utils.py :	Helper functions (e.g., cleaning company names, retry logic).
 
