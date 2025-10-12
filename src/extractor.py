@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+import time
 from bs4 import BeautifulSoup
 
 from dataclass import FillingMeta, ItemSections
@@ -117,4 +118,6 @@ class Extractor:
         # bubble up the last error after retries
         raise last_err
     
+    def fetch_item7(self, tenK):
+        
     
