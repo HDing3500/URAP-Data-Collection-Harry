@@ -119,5 +119,5 @@ class Extractor:
         raise last_err
     
     def fetch_item7(self, tenK):
-        
+        return 0
     
