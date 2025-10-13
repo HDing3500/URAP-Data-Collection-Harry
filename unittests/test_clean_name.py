@@ -1,6 +1,8 @@
 # tests/test_clean_name.py
+import sys
+sys.path.append('/Users/bruce/OneDrive/Desktop/School/URAP/Code/src')  # Adjust the path as necessary to import from src
 import unittest
-from Code.src.extractFile import Extractor
+from extractFile import Extractor
 
 class TestExtractor(unittest.TestCase):
 
@@ -8,3 +10,5 @@ class TestExtractor(unittest.TestCase):
         name = "Microsoft Corporation"
         cleaned = Extractor.clean_name(name)
         self.assertEqual(cleaned, "microsoft")
+if __name__ == '__main__':
+    unittest.main()

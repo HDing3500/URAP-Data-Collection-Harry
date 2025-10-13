@@ -4,7 +4,7 @@ import os
 import time
 from bs4 import BeautifulSoup
 
-from Code.src.dataclass import FilingMeta, ItemSections
+from dataclass import FilingMeta, ItemSections
 
 
 #URLS
