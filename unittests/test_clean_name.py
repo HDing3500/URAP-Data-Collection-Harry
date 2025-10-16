@@ -2,7 +2,7 @@
 import sys
 sys.path.append('/Users/bruce/OneDrive/Desktop/School/URAP/Code/src')  # Adjust the path as necessary to import from src
 import unittest
-from extractFile import Extractor
+from Extract_File import Extractor
 
 class TestExtractor(unittest.TestCase):
 

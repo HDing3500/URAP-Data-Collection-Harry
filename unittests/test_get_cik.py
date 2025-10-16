@@ -7,7 +7,7 @@ from unittest.mock import patch
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(os.path.join(ROOT, "src"))
 
-from extractFile import Extractor  # <- match your actual module name
+from Extract_File import Extractor  # <- match your actual module name
 
 class TestExtractor(unittest.TestCase):
     def test_get_cik(self):

@@ -1,5 +1,13 @@
 # tests/test_item_extractor.py
-from Itemextractor import extract_item7_item8
+import os
+import sys
+import unittest
+from unittest.mock import patch
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(ROOT, "src"))
+
+from Extract_Items import extract_item7_item8
 
 def test_item7_and_item8_extraction_from_sample():
     """
