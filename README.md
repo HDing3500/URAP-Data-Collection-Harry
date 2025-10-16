@@ -26,9 +26,11 @@ This tool uses the EDGAR API to retrieve company filings, extract Item 7 (Manage
 ## Classes
 
 ### Extractor
-models.py :	Defines FilingMeta, ItemSections, and Snippet dataclasses used throughout the pipeline.
+dataclasses.py :	Defines FilingMeta, ItemSections, and Snippet dataclasses used throughout the pipeline.
 
-extractor.py	: Core logic for fetching filings, extracting Items 7 & 8, and filtering restructuring-related snippets.
+Extract_File.py	: Fetch the 10k File
+
+Extract_Items.py : Fetch item 7 & 8 and extract the information we need
 
 main.py :	Example script showing how to run the extractor for a specific company and year.
 
