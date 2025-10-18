@@ -2,6 +2,7 @@ import requests
 import re
 import os
 import time
+import pandas as pd
 from bs4 import BeautifulSoup
 
 from dataclass import FilingMeta, ItemSections
@@ -13,7 +14,7 @@ ARCHIVES_BASE = "https://www.sec.gov/Archives"
 
 class Extractor:
     def __init__(self, timeout = 30, max_retries = 3, retry_sleep = 0.5):
-        self.header = {"User-Agent": "brucetan@berkeley.edu"}
+        self.header = {"User-Agent": "iamaudreylin@gmail.com"}
         self.timeout = timeout
         self.max_retries = max_retries
         self.retry_sleep = retry_sleep
@@ -59,32 +60,17 @@ class Extractor:
         accessions = recent.get("accessionNumber", [])
         primary_docs = recent.get("primaryDocument", [])
         report_dates = recent.get("reportDate", [])
-        filing_dates = recent.get("filingDate", [])
         
-        def ok(form: str) -> bool:
-            f = (form or "").upper()
-            if f == "10-K":
-                return True
-            if f == "10-K/A":
-                return include_amendments
-            return False
-        
-        # First pass: prefer reportDate match (when present)
-        for form, acc, doc, rdate, fdate in zip(forms, accessions, primary_docs, report_dates, filing_dates):
-            if ok(form) and rdate and str(rdate).startswith(str(fiscal_year)):
-                return self._build_meta(company, self.cik, fiscal_year, form, acc, doc, rdate, fdate)
-
-        # Fallback: filingDate match
-        for form, acc, doc, rdate, fdate in zip(forms, accessions, primary_docs, report_dates, filing_dates):
-            if ok(form) and fdate and str(fdate).startswith(str(fiscal_year)):
-                return self._build_meta(company, cik, fiscal_year, form, acc, doc, rdate, fdate)
+        for form, acc, doc, rdate in zip(forms, accessions, primary_docs, report_dates):
+            if form == '10-K' and rdate and str(rdate).startswith(str(fiscal_year)):
+                return self._build_meta(company, self.cik, fiscal_year, form, acc, doc, rdate, None)
+            
 
         return None
     
     @staticmethod
     def _build_meta(company: str, cik: str, fiscal_year: int, form: str, accession: str, primary_doc: str,
                     report_date: str, filing_date: str) -> FilingMeta:
-        is_amend = form.upper() == "10-K/A"
         acc_nodash = accession.replace("-", "")
         url = f"{ARCHIVES_BASE}/edgar/data/{int(cik)}/{acc_nodash}/{primary_doc}"
         return FilingMeta(
@@ -97,7 +83,6 @@ class Extractor:
             report_date=report_date or None,
             filing_date=filing_date or None,
             url=url,
-            is_amendment=is_amend
         )
     
      # 4) fetch HTML ----------
@@ -106,18 +91,8 @@ class Extractor:
         Fetch the HTML at meta.url.
         If the response is an index page, you'll resolve it later (next step in your pipeline).
         """
-        last_err = None
-        for _ in range(self.max_retries):
-            try:
-                r = requests.get(meta.url, headers=self.headers, timeout=self.timeout)
-                r.raise_for_status()
-                return r.text
-            except Exception as e:
-                last_err = e
-                time.sleep(self.retry_sleep)
-        # bubble up the last error after retries
-        raise last_err
+        r = requests.get(meta.url, headers=self.headers, timeout=self.timeout)
+        r.raise_for_status()
+        return r.text
     
-    def fetch_item7(self, tenK):
-        return 0
     

@@ -15,9 +15,7 @@ class FilingMeta:
     accession: str
     primary_doc: str
     report_date: Optional[str]
-    filing_date: Optional[str]
     url: str
-    is_amendment: bool = False
 
 
 @dataclass

@@ -75,7 +75,7 @@ for form, acc, doc, rdate, fdate in zip(forms, accessions, primary_docs, report_
 if not chosen:
     # Optional fallback: use the most recent 10-K if the reportDate doesn't match
     print("    ! No exact reportDate match")
-
+    
 if not chosen:
     raise SystemExit("No 10-K filings found for this company.")
 
