@@ -2,7 +2,7 @@
 import re
 from typing import Optional, List, Tuple
 from bs4 import BeautifulSoup
-from models import ItemSections
+from dataclasses import ItemSections
 
 # Compile once
 ITEM7_RE   = re.compile(r'^\s*item\s*7\s*[\.\:\- ]*(management|md&a|$)', re.I)
