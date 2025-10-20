@@ -3,7 +3,7 @@ import re
 import os
 import time
 import pandas as pd
-from bs4 import BeautifulSoup
+
 
 from dataclass import FilingMeta, ItemSections
 
@@ -18,6 +18,9 @@ class Extractor:
         self.timeout = timeout
         self.max_retries = max_retries
         self.retry_sleep = retry_sleep
+        self.cik = None
+        
+    
     
     @staticmethod
     def clean_name(s: str) -> str:
@@ -27,28 +30,11 @@ class Extractor:
         s = re.sub(r'\s+', ' ', s)         # collapse extra spaces
         return s.strip()
         
-    # ---------- 1) company -> CIK ----------    
-    def get_cik(self, company_name : str):
-        url = SEC_BASE + "/files/company_tickers.json"
-        r = requests.get(url,headers= self.header)
-        r.raise_for_status()
-        data = r.json()
-        
-        mapping = {}
-        
-        for rec in data.values():
-            cik = str(rec["cik_str"]).zfill(10)
-            title = Extractor.clean_name(rec["title"])
-            mapping[title] = cik
-        
-        norm = Extractor.clean_name(company_name)
-        return mapping.get(norm)
-        
-    # ---------- 2) CIK -> submissions ----------
     def get_submissions(self, cik : str) -> dict:
     #Fetch the SEC submission for a company cik
-        url = f"{SEC_BASE}/submissions/CIK{str(int(cik)).zfill(10)}.json"
-        r = requests.get(url, headers=self.header, timeout=30)
+        self.cik = str(int(cik)).zfill(10)
+        url = f"{SEC_BASE}/submissions/CIK{self.cik}.json"
+        r = requests.get(url, headers= self.header, timeout=30)
         r.raise_for_status()
         return r.json()
     
@@ -91,7 +77,7 @@ class Extractor:
         Fetch the HTML at meta.url.
         If the response is an index page, you'll resolve it later (next step in your pipeline).
         """
-        r = requests.get(meta.url, headers=self.headers, timeout=self.timeout)
+        r = requests.get(meta.url, headers=self.header, timeout=self.timeout)
         r.raise_for_status()
         return r.text
     

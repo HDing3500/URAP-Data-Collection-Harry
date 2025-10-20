@@ -2,23 +2,39 @@
 import os
 import sys
 import unittest
-from unittest.mock import patch
+import pandas as pd
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(os.path.join(ROOT, "src"))
 
-from Extract_File import Extractor  # <- match your actual module name
+from Extract_File import Extractor
+from dataclass import FilingMeta
 
 class TestExtractor(unittest.TestCase):
+    """Test whether extractor sucesfully obtain the html file and that it got the right file"""
 
-    @patch.object(Extractor, 'fetch_html')
-    def test_fetch_10k(self, mock_fetch_html):
+    def test_fetch_10k(self):
         # Arrange
-        mock_fetch_html.return_value = "<html>Mocked HTML content</html>"
-        extractor = Extractor("AAPL", 2020)
+        extractor = Extractor()
+        meta = FilingMeta(
+            company="AIR",
+            cik="0000001750",
+            fiscal_year=2019,
+            form="10-K",
+            accession="0001047469-19-004266",
+            primary_doc="a2239223z10-k.htm",
+            report_date="2019-05-31",
+            url="https://www.sec.gov/Archives/edgar/data/1750/000104746919004266/a2239223z10-k.htm"
+        )
 
         # Act
-        result = extractor.fetch_10k()
+        html = extractor.fetch_10k(meta)
 
-        # Assert
-        self.assertIn("Mocked HTML content", result)
+       # Assert
+        self.assertIsInstance(html, str)
+        self.assertGreater(len(html), 1000)  # file is large → sanity check
+        self.assertIn("<html", html.lower())
+        self.assertIn("</html>", html.lower())
+        
+if __name__ == "__main__":
+    unittest.main()

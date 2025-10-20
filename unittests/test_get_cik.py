@@ -19,7 +19,7 @@ class TestExtractor(unittest.TestCase):
             def raise_for_status(self): pass
             def json(self): return fake_json
 
-        with patch("extractFile.requests.get", return_value=Resp()):
+        with patch("Extract_File.requests.get", return_value=Resp()):
             ext = Extractor()
             cik = ext.get_cik("Microsoft Corporation")
             self.assertEqual(cik, "0000789019")
