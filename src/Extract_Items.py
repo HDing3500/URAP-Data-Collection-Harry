@@ -2,30 +2,75 @@
 import re
 from tempfile import template
 from typing import Optional, Dict, List, Tuple, Set
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Tag
 from dataclass import ItemSections
 
-ITEM7_RE   = re.compile(r"^\s*item\s*7\b", re.I)
-ITEM7A_RE  = re.compile(r"^\s*item\s*7\s*a\b", re.I)
-ITEM8_RE   = re.compile(r"^\s*item\s*8\b", re.I)
-ITEM9_RE   = re.compile(r"^\s*item\s*9\b", re.I)
-
-BLOCK_TAGS = ("h1","h2","h3","h4","h5","h6","p","div","span","b","strong","font","a")
 
 class Extract_Restructure:
     def __init__(self):
         pass
     
+    #Helper functions
+    @staticmethod
+    def _norm(s: str) -> str:
+        s = (s or "").replace("\xa0", " ")
+        s = re.sub(r"[\s–—\-:._]+", " ", s, flags=re.UNICODE)
+        return s.strip()
+    
+    @staticmethod
+    def stream_until_stop(start_tag):
+        text_chunks = []
+        
+        for el in start_tag.next_elements:
+            if isinstance(el, Tag):
+                t = el.get_text(" ", strip=True)
+                if re.match(r"^\s*item\s*(7a|8|9)\b", t, re.I):
+                    break
+            if isinstance(el, Tag) and el.name == "p":
+                text_chunks.append(el.get_text(" ", strip=True))
+            if el.name == "table":
+                for row in el.find_all("tr"):
+                    cells = [Extract_Restructure._norm(cell.get_text(" ", strip=True)) for cell in row.find_all(["td","th"])]
+                    if cells:
+                        line = "\t".join(cells)
+                        text_chunks.append(line)
+
+        joined = "\n".join(text_chunks)
+        return joined, len(joined)
+    
+    @staticmethod
+    def find_real_item7(soup):
+        item7_candidates = []
+        for b in soup.find_all(["b", "strong"]):
+            txt = b.get_text(" ", strip=True)
+            if re.match(r"^\s*item\s*7\b", txt, re.I):
+                item7_candidates.append(b)
+
+        best_tag = None
+        best_len = 0
+
+        for tag in item7_candidates:
+            # skip TOC entries
+            if tag.find_parent(["ul", "ol", "table"]):
+                continue
+
+            # slice forward until 7A/8/9
+            collected, n = Extract_Restructure.stream_until_stop(tag)
+            if n > best_len:
+                best_tag, best_len = tag, n
+        return best_tag
+    
+    
     def extract_items(self, html):
+        #Take item 7 and 8 from the html document
         soup = BeautifulSoup(html, 'html.parser')
-        
-        for junk in soup(["script", "style"]):
-            junk.decompose()
-        
-        
+
+        item7_text, item7_count = Extract_Restructure.stream_until_stop(Extract_Restructure.find_real_item7(soup))
+
+
         None
         
-    def stream_blocks(self, meta : ItemSections)
+    def stream_blocks(self, meta : ItemSections):
         #Transform/Normalize item sections for simplicity (easier to analyze)
         None
     
