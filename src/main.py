@@ -1,5 +1,5 @@
 from filing import Extractor
-from Extract_Items import ItemExtractor
+from items import ItemExtractor
 from dataclass import FilingMeta
 from bs4 import BeautifulSoup
 

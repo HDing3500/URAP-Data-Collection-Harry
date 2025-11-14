@@ -67,7 +67,7 @@ class Extract_Restructure:
         best_len = 0
 
         for tag in candidates:
-            # skip TOC entries
+            # skip TOC (Table Of Contents) entries
             if tag.find_parent(["ul", "ol", "table"]):
                 continue
 
