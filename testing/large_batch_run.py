@@ -44,7 +44,7 @@ def main(max_rows=None):
     start = time.perf_counter()
 
     for idx, row in df.iterrows():
-        cik = row["cik"]
+        cik = str(row["cik"])
         extractor = Extractor(cik)
         cik = extractor.cik  # zero-padded
         company = row.get("conm", "")
@@ -74,6 +74,10 @@ def main(max_rows=None):
 
         if meta is None:
             failure_records.append((cik, "no_10k_for_year"))
+            
+            if len(failure_records) <= 5: 
+                extractor.debug_print_all_10ks(subs)
+
             continue
 
         # --- step 3: fetch html ---
@@ -117,7 +121,7 @@ def main(max_rows=None):
 
 if __name__ == "__main__":
     # during development, limit to maybe 100 rows
-    main(max_rows=100)
+    main(max_rows=20)
 
     # for full production run:
     # main(max_rows=None)

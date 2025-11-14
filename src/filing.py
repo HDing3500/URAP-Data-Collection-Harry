@@ -180,3 +180,49 @@ class Extractor:
     def fetch_10k(self, meta: FilingMeta) -> str:
         r = self._get_with_retry(meta.url)
         return r.text
+    
+    
+    def debug_print_all_10ks(self, submissions: dict):
+        """
+        Debug helper: print all 10-K-like filings (form + reportDate)
+        from both 'recent' and the older 'files' JSONs.
+        """
+        print(f"\n[DEBUG] CIK={self.cik}")
+
+        filings = submissions.get("filings", {})
+
+        # --- recent ---
+        recent = filings.get("recent", {})
+        forms = recent.get("form", [])
+        report_dates = recent.get("reportDate", [])
+
+        print("[DEBUG] Recent 10-K-like filings:")
+        for f, rd in zip(forms, report_dates):
+            if f and rd and f.startswith("10-K"):
+                print(f"    form={f}, reportDate={rd}")
+
+        # --- older files ---
+        files = filings.get("files", [])
+        print(f"[DEBUG] Older files entries: {len(files)}")
+
+        for file_info in files:
+            name = file_info.get("name")
+            if not name:
+                continue
+
+            older_url = f"{SEC_BASE}/submissions/{name}"
+            print(f"[DEBUG]  Checking older file: {older_url}")
+
+            try:
+                older_json = requests.get(older_url, headers=self.header, timeout=self.timeout).json()
+            except Exception as e:
+                print(f"[DEBUG]   ERROR fetching older file: {e}")
+                continue
+
+            older_recent = older_json.get("filings", {}).get("recent", {})
+            o_forms = older_recent.get("form", [])
+            o_report_dates = older_recent.get("reportDate", [])
+
+            for f, rd in zip(o_forms, o_report_dates):
+                if f and rd and f.startswith("10-K"):
+                    print(f"    (older) form={f}, reportDate={rd}")

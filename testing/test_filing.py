@@ -15,11 +15,11 @@ class Testfiling(unittest.TestCase):
     
     def test_get_submission(self):
         # Arrange
-        extractor = Extractor()
+        extractor = Extractor("0000001750")
         cik = "0000001750"  # Example CIK for testing
 
         # Act
-        submissions = extractor.get_submissions(cik)
+        submissions = extractor.get_submissions()
 
         # Assert
         self.assertIsInstance(submissions, dict)
@@ -27,7 +27,7 @@ class Testfiling(unittest.TestCase):
         
     def test_build_meta(self):
         # Arrange
-        extractor = Extractor()
+        extractor = Extractor("0000001750")
         company = "AIR"
         cik = "0000001750"
         fiscal_year = 2019
@@ -49,10 +49,10 @@ class Testfiling(unittest.TestCase):
         
     def test_choose_10k(self):
         # Arrange
-        extractor = Extractor()
-        company = "AIR"
-        submissions = extractor.get_submissions("0000001750")
-        fiscal_year = 2019
+        extractor = Extractor("0000061478")
+        company = "ADC TELECOMMUNICATIONS INC"
+        submissions = extractor.get_submissions()
+        fiscal_year = 2002
 
         # Act
         meta = extractor.choose_10k(company, submissions, fiscal_year)
@@ -65,7 +65,7 @@ class Testfiling(unittest.TestCase):
         
     def test_fetch_10k(self):
         # Arrange
-        extractor = Extractor()
+        extractor = Extractor("0000001750")
         meta = FilingMeta(
             company="AIR",
             cik="0000001750",
