@@ -3,10 +3,23 @@ import re
 from tempfile import template
 from typing import Optional, Dict, List, Tuple, Set
 from bs4 import BeautifulSoup, Tag
-from dataclass import ItemSections
+from dataclass import ItemSections, Block
 
 
 class Extract_Restructure:
+    #Constructor
+    keywords = ["restructuring",
+                "rationalization",
+                "reorganization",
+                "realignment",
+                "repositioning",
+                "divestiture of asset and business",
+                "asset impairment",
+                "layoff cost",
+                "employee termination",
+                "workforce reduction"
+    ]
+    
     def __init__(self):
         pass
     
@@ -19,7 +32,8 @@ class Extract_Restructure:
     
     @staticmethod
     def stream_until_stop(start_tag):
-        text_chunks = []
+        blocks: List[Block] = []
+        current_paragraphs: List[str] = []
         
         for el in start_tag.next_elements:
              # Only work with tags (skip NavigableString etc.)
@@ -37,26 +51,32 @@ class Extract_Restructure:
 
             # 1) Handle tables ONCE, and skip collecting their inner <p> separately
             if el.name == "table":
+                rows = []
                 for row in el.find_all("tr"):
                     cells = [
                         Extract_Restructure._norm(cell.get_text(" ", strip=True))
                         for cell in row.find_all(["td", "th"])
                     ]
                     if cells:
-                        line = "\t".join(cells)
-                        text_chunks.append(line)
+                        row.append(cells)
+                if rows:
+                    blocks.append(Block(type="table", rows=rows))
                 # continue so we don't also treat descendants as standalone blocks
                 continue
 
             # 2) Handle paragraphs, but NOT those inside a table (avoid duplication)
             if el.name == "p" and not el.find_parent("table"):
-                text_chunks.append(el.get_text(" ", strip=True))
-
-            joined = "\n".join(text_chunks)
-            return joined, len(joined)
+                txt = el.get_text(" ", strip=True)
+                if txt:
+                    blocks.append(Block(type="paragraph", text=txt))
+                continue
+                
+        #Join all collected text chunks into a single string
+        joined = "\n".join(text_chunks)
+        return joined
     
-    @staticmethod
-    def find_real_item7(soup):
+    
+    def find_item7_tag(soup):
         candidates = []
         for b in soup.find_all(["b", "strong"]):
             txt = b.get_text(" ", strip=True)
@@ -72,13 +92,13 @@ class Extract_Restructure:
                 continue
 
             # slice forward until 7A/8/9
-            collected, n = Extract_Restructure.stream_until_stop(tag)
-            if n > best_len:
-                best_tag, best_len = tag, n
+            collected= Extract_Restructure.stream_until_stop(tag)
+            if len(collected) > best_len:
+                best_tag, best_len = tag, len(collected)
         return best_tag
     
-    @staticmethod
-    def find_real_item8(soup):
+    
+    def find_item8_tag(self, soup):
         candidates = []
         for b in soup.find_all(["b", "strong"]):
             txt = b.get_text(" ", strip=True)
@@ -94,9 +114,9 @@ class Extract_Restructure:
                 continue
 
             # slice forward until 7A/8/9
-            collected, n = Extract_Restructure.stream_until_stop(tag)
-            if n > best_len:
-                best_tag, best_len = tag, n
+            collected = Extract_Restructure.stream_until_stop(tag)
+            if len(collected) > best_len:
+                best_tag, best_len = tag, len(collected)
         return best_tag
     ###-----------------------Helper functions end--------------------###
     
@@ -105,12 +125,12 @@ class Extract_Restructure:
         #Take item 7 and 8 from the html document
         soup = BeautifulSoup(html, 'html.parser')
 
-        item7_text, item7_count = Extract_Restructure.stream_until_stop(Extract_Restructure.find_real_item7(soup))
-        item8_text, item8_count = Extract_Restructure.stream_until_stop(Extract_Restructure.find_real_item8(soup))
+        item7_text = self.stream_until_stop(self.find_item7_tag(soup))
+        item8_text = self.stream_until_stop(self.find_item8_tag(soup))
 
         return item7_text, item8_text
         
-    def stream_blocks(self, meta : ItemSections):
+    def stream_blocks(self, items_txt):
         #Transform/Normalize item sections for simplicity (easier to analyze)
         
         None

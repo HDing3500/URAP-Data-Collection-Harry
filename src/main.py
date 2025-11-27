@@ -1,24 +1,17 @@
-from filing import Extractor
-from items import ItemExtractor
+from filing import Extract_Filing
+from items import Extract_Restructure
 from dataclass import FilingMeta
 from bs4 import BeautifulSoup
+import pandas as pd
+import os
 
 def main():
-    # --- Define metadata for one known 10-K ---
-    meta = FilingMeta(
-        company="AIR",
-        cik="0000001750",
-        fiscal_year=2019,
-        form="10-K",
-        accession="0001047469-19-004266",
-        primary_doc="a2239223z10-k.htm",
-        report_date="2019-05-31",
-        url="https://www.sec.gov/Archives/edgar/data/1750/000104746919004266/a2239223z10-k.htm"
-    )
-
-    # --- Fetch HTML from SEC ---
-    extractor = Extractor()
-    html = extractor.fetch_10k(meta)
+    ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    DATA_PATH = os.path.join(ROOT, "data", "sample_all.csv")
+    
+    df = pd.read_csv(DATA_PATH)
+    
+    print(int(df['cik'][0]))
     
 
 

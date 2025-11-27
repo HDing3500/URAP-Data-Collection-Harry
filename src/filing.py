@@ -5,20 +5,27 @@ import pandas as pd
 
 from dataclass import FilingMeta
 
-# URLS
+# Intance variables
 SEC_BASE = "https://data.sec.gov"
 ARCHIVES_BASE = "https://www.sec.gov/Archives"
 
 VALID_10K_FORMS = {"10-K", "10-k"}
 
 
-class Extractor:
-    def __init__(self, cik, timeout=30, max_retries=3, retry_sleep=0.5):
+class Extract_Filing:
+    def __init__(self, cik, fiscal_year, company, timeout=30, max_retries=3, retry_sleep=0.5):
         self.header = {"User-Agent": "iamaudreylin@gmail.com"}
         self.timeout = timeout
         self.max_retries = max_retries
         self.retry_sleep = retry_sleep
         self.cik = str(int(cik)).zfill(10)
+        self.fiscal_year = int(fiscal_year)
+        self.company = str(company)
+        
+    def getFiling(self):
+        submission = self.get_submissions()
+        meta = self.choose_10k("", submission, self.fiscal_year)
+        
 
     @staticmethod
     def clean_name(s: str) -> str:
@@ -99,7 +106,7 @@ class Extractor:
     # ------------------------------
     # 3. Choose the 10-K (recent + older files)
     # ------------------------------
-    def choose_10k(self, company: str, submissions: dict, fiscal_year: int) -> FilingMeta | None:
+    def choose_10k(self, submissions: dict) -> FilingMeta | None:
         filings = submissions.get("filings", {}) or {}
 
         all_candidates: list[FilingMeta] = []
@@ -108,7 +115,7 @@ class Extractor:
         recent = filings.get("recent", {}) or {}
         all_candidates.extend(
             self.collect_10k(
-                company, self.cik, fiscal_year, recent
+                self.company, self.cik, self.fiscal_year, recent
             )
         )
 
@@ -129,7 +136,7 @@ class Extractor:
 
             all_candidates.extend(
                 self.collect_10k(
-                    company, self.cik, fiscal_year, older_json
+                    self.company, self.cik, self.fiscal_year, older_json
                 )
             )
 
@@ -165,7 +172,7 @@ class Extractor:
                         if m:
                             available_years.add(int(m.group(1)))
 
-            # Print debug message
+            #Print debug message
             print(f"[DEBUG][CIK={self.cik}] No 10-K found for fiscal year {fiscal_year}.")
             if available_years:
                 print(f"[DEBUG][CIK={self.cik}] Available 10-K years: {sorted(available_years)}")
@@ -174,6 +181,7 @@ class Extractor:
             else:
                 print(f"[DEBUG][CIK={self.cik}] No 10-K filings found at all!")
 
+            #No candidates found for the requested fiscal year — return None
             return None
 
 
@@ -213,7 +221,7 @@ class Extractor:
     def fetch_10k(self, meta: FilingMeta) -> str:
         r = self.request_web(meta.url)
         return r.text
-
+    
     def debug_print_all_10ks(self, submissions: dict):
         """
         Debug helper: print all 10-K-like filings (form + reportDate)
@@ -259,3 +267,5 @@ class Extractor:
             for f, rd in zip(o_forms, o_report_dates):
                 if f and rd and f.startswith("10-K"):
                     print(f"    (older) form={f}, reportDate={rd}")
+
+
