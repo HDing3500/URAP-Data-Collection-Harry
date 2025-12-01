@@ -16,6 +16,12 @@ def main():
     
     print(item.get_restructure(html))
     
+    # Separate item 7 and 8 restructure blocks
+    # Write out 2 .txt files with a name gvkey_fyear_item7.txt and gvkey_fyear_item8.txt
+    # Test out end to end process with a couple of rows from sample_all.csv
+    # Add case when item 8 is on a different page
+    
+    
     
 
 
