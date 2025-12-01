@@ -1,4 +1,6 @@
 # item_extractor.py
+import os
+import csv
 import re
 from tempfile import template
 from typing import Optional, Dict, List, Tuple, Set
@@ -71,9 +73,7 @@ class Extract_Restructure:
                     blocks.append(Block(type="paragraph", text=txt))
                 continue
                 
-        #Join all collected text chunks into a single string
-        joined = "\n".join(text_chunks)
-        return joined
+        return blocks
     
     
     def find_item7_tag(soup):
@@ -136,20 +136,74 @@ class Extract_Restructure:
         
     def stream_blocks(self, blocks: List[Block]):
         #Transform/Normalize item sections for simplicity (easier to analyze)
-        
-        None
+        for block in blocks:
+            if block.type == "paragraph":
+                block.text = self._norm(block.text)
+            elif block.type == "table":
+                normalized_rows = []
+                for row in block.rows:
+                    normalized_row = [self._norm(cell) for cell in row]
+                    normalized_rows.append(normalized_row)
+                block.rows = normalized_rows
+        return blocks
     
     def score_block(self, block):
         #Give a score to a block based on relevancy to restructuring
         None
     
-    def is_restructuring(self,block):
-        #Determine if a block is about restructuring
-        None
-        
+    def is_restructuring(self, blocks):
+        kws = [k.lower().strip() for k in self.keywords if k]
+        if not kws:
+            return False
+
+        # build regex that matches any keyword as a whole phrase
+        kws_pattern = r"|".join(re.escape(k) for k in kws)
+        pattern = re.compile(rf"\b(?:{kws_pattern})\b", re.I)
+
+        for block in blocks or []:
+            if block is None:
+                continue
+
+            text = None
+            # Paragraph blocks have `text`; tables have `rows`
+            if getattr(block, "type", None) == "paragraph":
+                text = (block.text or "")
+            elif getattr(block, "type", None) == "table":
+                rows = block.rows or []
+                # Flatten table cells into searchable text
+                row_texts = ["\t".join(cell for cell in row if cell) for row in rows]
+                text = "\n".join(row_texts)
+            elif isinstance(block, str):
+                text = block
+            else:
+                # Unknown block shape — skip
+                continue
+
+            if text and pattern.search(text):
+                return True
+
+        return False
+    
     def capture_hits(self, wanted_blocks):
         #Aggregate all relevant blocks within one section.
-        None
+        
+        # Normalize blocks first (safe to call with empty list)
+        blocks = self.stream_blocks(wanted_blocks or [])
+
+        hits = []
+
+        for idx, block in enumerate(blocks):
+            try:
+                if self.is_restructuring([block]):
+                    hits.append({
+                        "index": idx,
+                        "block": block,
+                    })
+            except Exception:
+                # Skip problematic blocks but continue processing
+                continue
+
+        return hits
     
     def merge_adjacent(self, blocks):
         #Merge adjacent blocks into one larger block.
@@ -157,6 +211,36 @@ class Extract_Restructure:
     
     def write_out(self, hits, filepath):
         #Write the extracted sections to an output file.
-        None
+        # Ensure target directory exists
+        dirpath = os.path.dirname(filepath) or "."
+        os.makedirs(dirpath, exist_ok=True)
+
+        # Write as CSV with columns: index, type, content
+        with open(filepath, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.DictWriter(fh, fieldnames=["index", "type", "content"] )
+            writer.writeheader()
+
+            for hit in hits or []:
+                idx = hit.get("index")
+                block = hit.get("block")
+
+                if getattr(block, "type", None) == "paragraph":
+                    content = (block.text or "").strip()
+                    btype = "paragraph"
+                elif getattr(block, "type", None) == "table":
+                    rows = block.rows or []
+                    # join cells with tab, rows with newline
+                    content = "\n".join("\t".join(cell for cell in row if cell) for row in rows)
+                    btype = "table"
+                elif isinstance(block, str):
+                    content = block
+                    btype = "string"
+                else:
+                    content = repr(block)
+                    btype = getattr(block, "type", "unknown")
+
+                writer.writerow({"index": idx, "type": btype, "content": content})
+
+        return filepath
         
     
