@@ -9,9 +9,13 @@ def main():
     ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     DATA_PATH = os.path.join(ROOT, "data", "sample_all.csv")
     
-    df = pd.read_csv(DATA_PATH)
+
+    filing = Extract_Filing("0000001750", fiscal_year=2019, company="AIR")
+    item = Extract_Restructure()
+    html = filing.get_html()
     
-    print(int(df['cik'][0]))
+    print(item.get_restructure(html))
+    
     
 
 

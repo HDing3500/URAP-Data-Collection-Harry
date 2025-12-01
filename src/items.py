@@ -60,7 +60,7 @@ class Extract_Restructure:
                         for cell in row.find_all(["td", "th"])
                     ]
                     if cells:
-                        row.append(cells)
+                        rows.append(cells)
                 if rows:
                     blocks.append(Block(type="table", rows=rows))
                 # continue so we don't also treat descendants as standalone blocks
@@ -76,7 +76,7 @@ class Extract_Restructure:
         return blocks
     
     
-    def find_item7_tag(soup):
+    def find_item7_tag(self, soup):
         candidates = []
         for b in soup.find_all(["b", "strong"]):
             txt = b.get_text(" ", strip=True)
@@ -118,7 +118,8 @@ class Extract_Restructure:
             if len(collected) > best_len:
                 best_tag, best_len = tag, len(collected)
         return best_tag
-    ###-----------------------Helper functions end--------------------###
+    
+    
     
     
     def extract_items(self, html):
@@ -242,5 +243,41 @@ class Extract_Restructure:
                 writer.writerow({"index": idx, "type": btype, "content": content})
 
         return filepath
+
+    def get_restructure(self, sections_or_html) -> List[str]:
+        """Return all text snippets (paragraphs or flattened table text)
+        from Item 7 and Item 8 that contain any of the restructuring keywords.
+
+        `sections_or_html` may be either an `ItemSections` object (as returned
+        by `extract_items`) or an HTML string.
+        """
+        # Accept either HTML or ItemSections
+        if isinstance(sections_or_html, str):
+            sections = self.extract_items(sections_or_html)
+        else:
+            sections = sections_or_html
+
+        results: List[str] = []
+
+        for blocks in (sections.item7_blocks or [], sections.item8_blocks or []):
+            # normalize blocks first
+            normalized = self.stream_blocks(blocks)
+            hits = self.capture_hits(normalized)
+            for rec in hits:
+                block = rec.get("block")
+                if getattr(block, "type", None) == "paragraph":
+                    text = (block.text or "").strip()
+                elif getattr(block, "type", None) == "table":
+                    rows = block.rows or []
+                    text = "\n".join("\t".join(cell for cell in row if cell) for row in rows)
+                elif isinstance(block, str):
+                    text = block
+                else:
+                    text = repr(block)
+
+                if text:
+                    results.append(text)
+
+        return results
         
     

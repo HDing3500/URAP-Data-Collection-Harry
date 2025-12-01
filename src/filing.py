@@ -22,9 +22,30 @@ class Extract_Filing:
         self.fiscal_year = int(fiscal_year)
         self.company = str(company)
         
-    def getFiling(self):
-        submission = self.get_submissions()
-        meta = self.choose_10k("", submission, self.fiscal_year)
+
+    def get_html(self) -> str | None:
+        """Run the full pipeline to obtain the 10-K HTML for this CIK/fiscal year.
+
+        Steps:
+        - fetch submissions JSON
+        - choose the appropriate 10-K metadata
+        - fetch the HTML document
+
+        Returns the document text on success or None when no candidate exists.
+        Raises RequestException on network errors.
+        """
+        # 1) get submissions
+        submissions = self.get_submissions()
+
+        # 2) choose 10-K meta
+        meta = self.choose_10k(submissions)
+        if meta is None:
+            # No 10-K found for requested fiscal year
+            return None
+
+        # 3) fetch HTML
+        html = self.fetch_10k(meta)
+        return html
         
 
     @staticmethod
@@ -106,7 +127,22 @@ class Extract_Filing:
     # ------------------------------
     # 3. Choose the 10-K (recent + older files)
     # ------------------------------
-    def choose_10k(self, submissions: dict) -> FilingMeta | None:
+    def choose_10k(self, *args) -> FilingMeta | None:
+        """Choose the 10-K filing.
+
+        Calling conventions supported:
+        - choose_10k(company, submissions, fiscal_year)
+        - choose_10k(submissions)  # uses self.company/self.fiscal_year
+        """
+        if len(args) == 1:
+            submissions = args[0]
+            company = self.company
+            fiscal_year = self.fiscal_year
+        elif len(args) == 3:
+            company, submissions, fiscal_year = args
+        else:
+            raise TypeError("choose_10k expects either (submissions) or (company, submissions, fiscal_year)")
+
         filings = submissions.get("filings", {}) or {}
 
         all_candidates: list[FilingMeta] = []
@@ -115,7 +151,7 @@ class Extract_Filing:
         recent = filings.get("recent", {}) or {}
         all_candidates.extend(
             self.collect_10k(
-                self.company, self.cik, self.fiscal_year, recent
+                company, self.cik, fiscal_year, recent
             )
         )
 
@@ -173,7 +209,7 @@ class Extract_Filing:
                             available_years.add(int(m.group(1)))
 
             #Print debug message
-            print(f"[DEBUG][CIK={self.cik}] No 10-K found for fiscal year {fiscal_year}.")
+            print(f"[DEBUG][CIK={self.cik}] No 10-K found for fiscal year {self.fiscal_year}.")
             if available_years:
                 print(f"[DEBUG][CIK={self.cik}] Available 10-K years: {sorted(available_years)}")
                 print(f"[DEBUG][CIK={self.cik}] Oldest 10-K year: {min(available_years)}")
