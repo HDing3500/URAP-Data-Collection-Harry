@@ -1,36 +1,25 @@
-# Automating Data Collection
-A Python project for extracting and analyzing restructuring-related disclosures from SEC 10-K filings.
-This tool uses the EDGAR API to retrieve company filings, extract Item 7 (Management’s Discussion & Analysis) and Item 8 (Financial Statements), and filter for text specifically related to restructuring activities.
+# Project Description
+We want to collect data of 20,000+ companies and we need to automate that process instead of manually collecting it. We can use the SEC API to obtain our 10-k files and then run it through an algorithm that captures restructuring related information. With these information we will feed it to an LLM and then use the LLM to answer our list of questions and that will be our final complete data set.
 
-## 🚀 Project Goals
+## Data
+All the data that is either used for testing or querying.
+sample_all.csv : All the desired companies that we want to collect.
+sample_collect_2025Fall.csv : All the companies that we manually collected (just 50 of them from top to bottom).
+10k_filing_info : This is where we store all the companies meta data needed to build each 10-k URL. This can be build with the build_filling.py in SRC. 
+The file above is needed for better run time in getting the 10-k.
 
-1.Automatically fetch 10-K filings from the SEC’s EDGAR database.
+## SRC
+dataclasses.py :	Holds an instance of classes like items, block (paragraphs) and Filing meta data. 
 
-2.Parse and isolate Item 7 and Item 8 sections.
+filing.py	: Fetch the 10k File.
 
-3.Identify sentences discussing restructuring, realignment, severance, and related activities.
+items.py : Fetch item 7 & 8 and extract from each the restructuring information.
 
-4.Output structured snippets for later testing against manually collected datasets.
+main.py : To pilot the code and build our final dataset.
 
-5.Serve as a foundation for an NLP model to evaluate disclosure accuracy and completeness.
-
-## Steps
-1. Get the CIK by using the CSV that contains the ticker and using the JSON well map out all the cik
-
-2. Locate the 10k url location
-
-3. Get item 7 and 8 and save it in text form
-   
-4. Filter out restructuring-related information
-
-## Classes
-
-### Extractor
-dataclasses.py :	Defines FilingMeta, ItemSections, and Snippet dataclasses used throughout the pipeline.
-
-Extract_File.py	: Fetch the 10k File
-
-Extract_Items.py : Fetch item 7 & 8 and extract the information we need
-
-main.py :	To pilot test the code
+## Testing
+test_filing : Verify that we have the right 10-k.
+test_item : Verify that we have the right item 7 and 8.
+test_restructuring : Compare the results between our manual collection and automatic collection.
+test_LLM : verify the results of the LLM and our manual answers.
 
