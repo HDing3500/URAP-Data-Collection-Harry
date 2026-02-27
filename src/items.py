@@ -11,11 +11,10 @@ from dataclass import ItemSections, Block
 class Extract_Restructure:
     #Constructor
     keywords = ["restructuring",
-                "rationalization",
                 "reorganization",
+                "special charge",
                 "realignment",
                 "repositioning",
-                "divestiture of asset and business",
                 "asset impairment",
                 "layoff cost",
                 "employee termination",
@@ -115,8 +114,11 @@ class Extract_Restructure:
 
             # slice forward until 7A/8/9
             collected = Extract_Restructure.stream_until_stop(tag)
+            # find the tag with the most content
             if len(collected) > best_len:
                 best_tag, best_len = tag, len(collected)
+            # when its in a different page
+            
         return best_tag
     
     
@@ -210,14 +212,14 @@ class Extract_Restructure:
         #Merge adjacent blocks into one larger block.
         None
     
-    def write_out(self, hits, filepath):
+    def write_out(self, hits, filepath7, filepath8):
         #Write the extracted sections to an output file.
         # Ensure target directory exists
-        dirpath = os.path.dirname(filepath) or "."
+        dirpath = os.path.dirname(filepath7) or "."
         os.makedirs(dirpath, exist_ok=True)
 
         # Write as CSV with columns: index, type, content
-        with open(filepath, "w", newline="", encoding="utf-8") as fh:
+        with open(filepath7, "w", newline="", encoding="utf-8") as fh:
             writer = csv.DictWriter(fh, fieldnames=["index", "type", "content"] )
             writer.writeheader()
 
@@ -242,7 +244,7 @@ class Extract_Restructure:
 
                 writer.writerow({"index": idx, "type": btype, "content": content})
 
-        return filepath
+        return filepath7
 
     def get_restructure(self, sections_or_html) -> List[str]:
         """Return all text snippets (paragraphs or flattened table text)

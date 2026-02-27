@@ -14,21 +14,22 @@ This tool uses the EDGAR API to retrieve company filings, extract Item 7 (Manage
 
 5.Serve as a foundation for an NLP model to evaluate disclosure accuracy and completeness.
 
-## Steps
-1. Get the CIK by using the CSV that contains the ticker and using the JSON well map out all the cik
+## Workflow
+1. Retrieve meta data from submission file
 
-2. Locate the 10k url location
+2. Fetch 10-k and locate item 7 and 8
 
-3. Get item 7 and 8 and save it in text form
+3. Pick out restructuring information from item 7 and 8
    
-4. Filter out restructuring-related information
+4. Feed to LLM then generate answers
 
 ## Classes
 
 ### Extractor
 dataclasses.py :	Defines FilingMeta, ItemSections, and Snippet dataclasses used throughout the pipeline.
 
-Extract_File.py	: Fetch the 10k File
+Extract_File.py	: 
+1. For each CIK 
 
 Extract_Items.py : Fetch item 7 & 8 and extract the information we need
 
