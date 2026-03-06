@@ -23,7 +23,7 @@ class Extract_Filing:
         self.fiscal_year = int(fiscal_year)
         self.company = str(company)
     
-    #call request with retry and timeout
+    @staticmethod
     def request_web(self, url: str):
         last_exc = None
         for _ in range(self.max_retries):
