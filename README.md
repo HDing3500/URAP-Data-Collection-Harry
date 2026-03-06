@@ -1,6 +1,17 @@
 # Project Description
 We want to collect data of 20,000+ companies and we need to automate that process instead of manually collecting it. We can use the SEC API to obtain our 10-k files and then run it through an algorithm that captures restructuring related information. With these information we will feed it to an LLM and then use the LLM to answer our list of questions and that will be our final complete data set.
 
+# Project Pipeline
+1. Get submission info which will be needed for the URL
+
+2. Call a request to API and get 10k
+
+3. Use beautiful soup to navigate html and locate item 7 & 8
+
+4. Capture restructuring based on keywords
+
+5. Feed restructuring into LLM and Get final CSV dataset
+
 ## Data
 All the data that is either used for testing or querying.
 
