@@ -139,10 +139,6 @@ class Extract_Restructure:
                 block.rows = normalized_rows
         return blocks
     
-    def score_block(self, block):
-        #Give a score to a block based on relevancy to restructuring
-        None
-    
     def is_restructuring(self, blocks):
         keywords = ["restructuring",
                 "reorganization",
