@@ -18,7 +18,7 @@ class Extract_Restructure:
     
     #Read through the document until next item
     @staticmethod
-    def stream_until_stop(start_tag):
+    def stream_until_stop(start_tag : Tag):
         blocks: List[Block] = []
         current_paragraphs: List[str] = []
         
@@ -205,7 +205,15 @@ class Extract_Restructure:
     
     def merge_adjacent(self, blocks):
         #Merge adjacent blocks into one larger block.
-        None
+        if not blocks:
+            return None
+        merged =  ""
+        for block in blocks:
+            if block.type != "paragraph":
+                raise TypeError("block has to be a paragraph")
+            merged += block.text
+
+        return Block(type = "paragraph", text = merged)
     
     def write_out(self, hits, filepath7, filepath8):
         #Write the extracted sections to an output file.
